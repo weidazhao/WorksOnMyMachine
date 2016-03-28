@@ -22,17 +22,14 @@ namespace WorksOnMyMachine.Controllers
         }
         public IActionResult About()
         {
-            string hostName = Environment.GetEnvironmentVariable("COMPUTERNAME");
-            ViewData["HOSTNAME"] = hostName;
+            ViewData["HostName"] = Environment.GetEnvironmentVariable("HOSTNAME") ??
+                Environment.GetEnvironmentVariable("COMPUTERNAME");
 
-            string os = Environment.GetEnvironmentVariable("OS");
-            ViewData["OS"] = os;
+            ViewData["OS"] = Environment.GetEnvironmentVariable("OS") ??
+                Environment.GetEnvironmentVariable("DNX_RUNTIME_ID");
 
-            string processorArch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432");
-            ViewData["PROCESSORARCH"] = processorArch;
-
-            string hostingEnvironment = Environment.GetEnvironmentVariable("Hosting:Environment");
-            ViewData["HOSTING_ENVIRONMENT"] = hostingEnvironment;
+            ViewData["PROCESSORARCH"] = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432");
+            ViewData["HOSTING_ENVIRONMENT"] = Environment.GetEnvironmentVariable("Hosting:Environment");
 
             StringBuilder envVars = new StringBuilder();
             foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
@@ -42,7 +39,6 @@ namespace WorksOnMyMachine.Controllers
 
             return View();
         }
-
         public IActionResult Error()
         {
             return View();
