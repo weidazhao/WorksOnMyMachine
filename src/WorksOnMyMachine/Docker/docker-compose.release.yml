@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  worksonmymachine:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile.release
+      args:
+      - SERVER_URLS=http://*:80
+    ports:
+    - "80:80"
