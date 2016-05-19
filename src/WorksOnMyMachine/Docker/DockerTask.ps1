@@ -492,3 +492,4 @@ if ($WaitForUrl) {
 if ($Refresh) {
     Refresh
 }
+
