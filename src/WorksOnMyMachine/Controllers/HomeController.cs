@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace WorksOnMyMachine.Controllers
 {
@@ -22,14 +23,40 @@ namespace WorksOnMyMachine.Controllers
         }
         public IActionResult About()
         {
-            string hostName = Environment.GetEnvironmentVariable("COMPUTERNAME");
+            string hostName;
+            // Will only work on Windows
+            //hostName = Environment.GetEnvironmentVariable("COMPUTERNAME");
+
+            // Works on both Windows and Linux
+            hostName = Environment.GetEnvironmentVariable("COMPUTERNAME") ??
+                                Environment.GetEnvironmentVariable("HOSTNAME");
+
             ViewData["HOSTNAME"] = hostName;
 
-            string os = Environment.GetEnvironmentVariable("OS");
-            ViewData["OS"] = os;
 
-            string processorArch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432");
-            ViewData["PROCESSORARCH"] = processorArch;
+            TimeZoneInfo tzInfo = null;
+            // Will only work on Windows
+            //tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+            // Works on both Windows and Linux
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            else
+                tzInfo = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+            ViewData["TZINFO"] = tzInfo;
+
+            var OSArchitecture = RuntimeInformation.OSArchitecture;
+            ViewData["OSARCHITECTURE"] = OSArchitecture.ToString();
+
+            var OSDescription = RuntimeInformation.OSDescription;
+            ViewData["OSDESCRIPTION"]= OSDescription.ToString();
+
+            var ProcessArchitecture = RuntimeInformation.ProcessArchitecture;
+            ViewData["PROCESSARCHITECTURE"] = ProcessArchitecture.ToString();
+
+            string FrameworkDescription = RuntimeInformation.FrameworkDescription;
+            ViewData["FRAMEWORKDESCRIPTION"] = FrameworkDescription;
 
             string hostingEnvironment = Environment.GetEnvironmentVariable("Hosting:Environment");
             ViewData["HOSTING_ENVIRONMENT"] = hostingEnvironment;
@@ -39,6 +66,9 @@ namespace WorksOnMyMachine.Controllers
                 envVars.Append(string.Format("<strong>{0}</strong>:{1}<br \\>", de.Key, de.Value));
 
             ViewData["ENV_VARS"] = envVars.ToString();
+
+
+            ViewData["Message"] = "Your application description page.";
 
             return View();
         }
