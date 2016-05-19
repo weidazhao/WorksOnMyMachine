@@ -3,9 +3,7 @@ version: '2'
 services:
   worksonmymachine:
     build:
-      context: ..
-      dockerfile: Docker/Dockerfile.release
-      args:
-      - SERVER_URLS=http://*:80
+      context: ../..
+      dockerfile: app/Docker/Dockerfile.release
     ports:
-    - "80:80"
+      - "80:80"
