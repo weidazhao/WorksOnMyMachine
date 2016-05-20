@@ -271,9 +271,8 @@ function Run () {
             $conflictingContainerIds = $conflictingContainerIds -Join ' '
             Write-Host "Stopping conflicting containers using port 80"
             $stopCommand = "docker stop $conflictingContainerIds"
-            cmd /c $stopCommand "2>&1"
             Write-Verbose "Executing: $stopCommand"
-            #Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+            Invoke-Expression "cmd /c $stopCommand `"2>&1`""
             if ($LastExitCode -ne 0) {
                 Write-Error "Failed to stop the container(s)"
             }
@@ -492,4 +491,3 @@ if ($WaitForUrl) {
 if ($Refresh) {
     Refresh
 }
-
