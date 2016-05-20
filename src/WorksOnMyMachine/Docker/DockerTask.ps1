@@ -284,7 +284,9 @@ function Run () {
         if ($LastExitCode -ne 0) {
             Write-Error "Failed to start the container(s)"
         }
-        ValidateVolumeMapping
+        if ($Environment -eq "debug"){
+          ValidateVolumeMapping
+        }
     }
     else {
         Write-Error -Message "$Environment is not a valid parameter. File '$composeFileName' does not exist." -Category InvalidArgument
