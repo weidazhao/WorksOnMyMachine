@@ -2,8 +2,8 @@ version: '2'
 
 services:
   worksonmymachine:
-    build:
-      context: ../..
-      dockerfile: app/Docker/Dockerfile.release
+    image: stevelasker/worksonmymachine:latest
     ports:
       - "80:80"
+    environment:
+    - ASPNETCORE_URLS=http://*:80
