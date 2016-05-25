@@ -4,7 +4,7 @@ services:
   worksonmymachine:
     build:
       context: ../..
-      dockerfile: app/Docker/Dockerfile.debug
+      dockerfile: dockerfile.debug
     environment:
       - REMOTE_DEBUGGING=${REMOTE_DEBUGGING}
     ports:

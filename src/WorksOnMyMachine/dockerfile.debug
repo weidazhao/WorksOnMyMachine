@@ -1,12 +1,11 @@
-FROM microsoft/dotnet:1.0.0-rc2-core
+FROM microsoft/dotnet:1.0.0-rc2-core-debugger
+#debugger image includes the .net debugger and dotnet watch
 
-# Copy the Debugger
-COPY /clrdbg /clrdbg
-RUN chmod 700 -R /clrdbg
-
-# Copy the app
-COPY /app /app
+# Copy the source of the app
+COPY project.json /app/
 WORKDIR /app
+RUN ["dotnet", "restore"]
+COPY . /app
 
 # Configure the listening port to 80
 ENV ASPNETCORE_URLS http://*:80
