@@ -1,3 +1,3 @@
 ﻿
 dotnet restore
-dotnet publish -c Release -o ./publishOutput/
+dotnet publish -c Release -o ./app/
