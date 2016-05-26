@@ -1,2 +1,2 @@
-﻿  dotnet restore
-  dotnet publish -c Release -o ./publishOutput/
+﻿dotnet restore
+dotnet publish -c Release -o ./publishOutput/
