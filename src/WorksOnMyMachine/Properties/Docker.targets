@@ -31,7 +31,7 @@
   <Target Name="DockerBuild" AfterTargets="Build" DependsOnTargets="$(DockerBuildDependsOn)" />
   <Target Name="CoreDockerBuild" Condition="'$(DockerBuild)'=='True'">
     <PropertyGroup>
-      <DockerBuildCommand>powershell -ExecutionPolicy RemoteSigned .\Docker\DockerTask.ps1 -Build -Environment $(Configuration) -Machine '$(DockerMachineName)' -ClrDebugVersion VS2015U2</DockerBuildCommand>
+      <DockerBuildCommand>powershell -ExecutionPolicy RemoteSigned .\DockerTask.ps1 -Build -Environment $(Configuration) -Machine '$(DockerMachineName)' -ClrDebugVersion VS2015U2</DockerBuildCommand>
       <DockerBuildCommand Condition="'$(NoDockerCache)'=='True'">$(DockerBuildCommand) -NoCache</DockerBuildCommand>
     </PropertyGroup>
     <Message Importance="high" Text="$(DockerBuildCommand)" />
@@ -44,7 +44,7 @@
   <Target Name="DockerClean" AfterTargets="Clean" DependsOnTargets="$(DockerCleanDependsOn)" />
   <Target Name="CoreDockerClean" Condition="'$(DockerBuild)'=='True'">
     <PropertyGroup>
-      <DockerCleanCommand>powershell -ExecutionPolicy RemoteSigned .\Docker\DockerTask.ps1 -Clean -Environment $(Configuration) -Machine '$(DockerMachineName)'</DockerCleanCommand>
+      <DockerCleanCommand>powershell -ExecutionPolicy RemoteSigned .\DockerTask.ps1 -Clean -Environment $(Configuration) -Machine '$(DockerMachineName)'</DockerCleanCommand>
     </PropertyGroup>
     <Message Importance="high" Text="$(DockerCleanCommand)" />
     <Exec

@@ -58,11 +58,11 @@ None. You cannot pipe inputs to DockerTask.
 
 .EXAMPLE
 Compiles the project and builds the docker image using the currently configured docker host, or when no host is set, used for the Docker for Windows beta. To see the container running, use the -Run parameter
-C:\PS> .\Docker\DockerTask.ps1 -Build -Environment Release
+C:\PS> .\DockerTask.ps1 -Build -Environment Release
 
 .EXAMPLE
 Will use 'docker-compose up' on the project, using the docker-machine instance named 'default', and opens a browser once the container responds. Assumes -Build was previously run. For the Docker for Windows Beta, remove the -Machine parameter or pass '' as the value.
-C:\PS> .\Docker\DockerTask.ps1 -Run -Environment Release -Machine 'default'
+C:\PS> .\DockerTask.ps1 -Run -Environment Release -Machine 'default'
 
 .LINK
 http://aka.ms/DockerToolsForVS
@@ -83,6 +83,8 @@ Param(
     [switch]$WaitForUrl,
     [Parameter(ParameterSetName = "Refresh", Position = 0, Mandatory = $True)]
     [switch]$Refresh,
+    [Parameter(ParameterSetName = "ValidateVolumeMapping", Position = 0, Mandatory = $True)]
+    [switch]$ValidateVolumeMapping,
     [parameter(ParameterSetName = "Clean", Position = 1, Mandatory = $True)]
     [parameter(ParameterSetName = "Build", Position = 1, Mandatory = $True)]
     [parameter(ParameterSetName = "Run", Position = 1, Mandatory = $True)]
@@ -96,6 +98,7 @@ Param(
     [Parameter(ParameterSetName = "GetUrl", Position = 1, Mandatory = $False)]
     [Parameter(ParameterSetName = "WaitForUrl", Position = 1, Mandatory = $False)]
     [parameter(ParameterSetName = "Refresh", Position = 2, Mandatory = $False)]
+    [parameter(ParameterSetName = "ValidateVolumeMapping", Position = 1, Mandatory = $False)]
     [String]$Machine,
     [parameter(ParameterSetName = "Clean", Position = 3, Mandatory = $False)]
     [parameter(ParameterSetName = "Build", Position = 3, Mandatory = $False)]
@@ -103,7 +106,7 @@ Param(
     [parameter(ParameterSetName = "Exec", Position = 2, Mandatory = $False)]
     [parameter(ParameterSetName = "Refresh", Position = 3, Mandatory = $False)]
     [ValidateNotNullOrEmpty()]
-    [String]$ProjectFolder = (Split-Path -Path $MyInvocation.MyCommand.Definition | Split-Path),
+    [String]$ProjectFolder = (Split-Path -Path $MyInvocation.MyCommand.Definition),
     [parameter(ParameterSetName = "Clean", Position = 4, Mandatory = $False)]
     [parameter(ParameterSetName = "Build", Position = 4, Mandatory = $False)]
     [parameter(ParameterSetName = "Run", Position = 4, Mandatory = $False)]
@@ -145,43 +148,38 @@ $Framework = "netcoreapp1.0"
 
 # Kills all containers using an image, removes all containers using an image, and removes the image.
 function Clean () {
-    $composeFileName = Join-Path $ProjectFolder (Join-Path Docker "docker-compose.$Environment.yml")
+    $composeFilePath = GetComposeFilePath($ProjectFolder)
 
-    if (Test-Path $composeFileName) {
-        Write-Host "Cleaning image $ImageName"
+    Write-Host "Cleaning image $ImageName"
 
-        $shellCommand = "docker-compose -f '$composeFileName' -p $ProjectName kill"
-        Write-Verbose "Executing: $shellCommand"
-        Invoke-Expression "cmd /c $shellCommand `"2>&1`""
-        if ($LastExitCode -ne 0) {
-            Write-Error "Failed to kill the running containers"
-        }
-
-        $shellCommand = "docker-compose -f '$composeFileName' -p $ProjectName rm -f"
-        Write-Verbose "Executing: $shellCommand"
-        Invoke-Expression "cmd /c $shellCommand `"2>&1`""
-        if ($LastExitCode -ne 0) {
-            Write-Error "Failed to remove the stopped containers"
-        }
-
-        $ImageNameRegEx = "\b$ImageName\b"
-
-        # If $ImageName exists remove it
-        docker images | select-string -pattern $ImageNameRegEx | foreach {
-            $imageName = $_.Line.split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[0];
-            $tag = $_.Line.split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[1];
-            $shellCommand = "docker rmi ${imageName}:$tag"
-            Write-Verbose "Executing: $shellCommand";
-            Invoke-Expression "cmd /c $shellCommand `"*>&1`"" | Out-Null
-        }
-
-        # If the folder for publishing exists, delete it
-        if (Test-Path $pubPath) {
-            Remove-Item $pubPath -Force -Recurse
-        }
+    $shellCommand = "docker-compose -f '$composeFilePath' -p $ProjectName kill"
+    Write-Verbose "Executing: $shellCommand"
+    Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($LastExitCode -ne 0) {
+        Write-Error "Failed to kill the running containers"
     }
-    else {
-        Write-Error -Message "$Environment is not a valid parameter. File '$composeFileName' does not exist." -Category InvalidArgument
+
+    $shellCommand = "docker-compose -f '$composeFilePath' -p $ProjectName rm -f"
+    Write-Verbose "Executing: $shellCommand"
+    Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($LastExitCode -ne 0) {
+        Write-Error "Failed to remove the stopped containers"
+    }
+
+    $ImageNameRegEx = "\b$ImageName\b"
+
+    # If $ImageName exists remove it
+    docker images | select-string -pattern $ImageNameRegEx | foreach {
+        $imageName = $_.Line.split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[0];
+        $tag = $_.Line.split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[1];
+        $shellCommand = "docker rmi ${imageName}:$tag"
+        Write-Verbose "Executing: $shellCommand";
+        Invoke-Expression "cmd /c $shellCommand `"*>&1`"" | Out-Null
+    }
+
+    # If the folder for publishing exists, delete it
+    if (Test-Path $pubPath) {
+        Remove-Item $pubPath -Force -Recurse
     }
 
     # If the $buildContext directory exists, remove it
@@ -209,34 +207,29 @@ function Build () {
         Invoke-Expression "$escapedScriptPath -Version '$ClrDebugVersion' -RuntimeID '$RuntimeID' -InstallPath '$clrDbgPath'"
     }
 
-    $composeFileName = Join-Path $pubPath (Join-Path Docker "docker-compose.$Environment.yml")
+    $composeFilePath = GetComposeFilePath($pubPath)
 
-    if (Test-Path $composeFileName) {
-        $buildArgs = ""
-        if ($NoCache)
-        {
-            $buildArgs = "--no-cache"
-        }
-
-        # Call docker-compose on the published project to build the images
-        $shellCommand = "docker-compose -f '$composeFileName' -p $ProjectName build $buildArgs"
-        Write-Verbose "Executing: $shellCommand"
-        Invoke-Expression "cmd /c $shellCommand `"2>&1`""
-        if ($LastExitCode -ne 0) {
-            Write-Error "Failed to build the image"
-        }
-
-        $tag = [System.DateTime]::Now.ToString("yyyy-MM-dd_HH-mm-ss")
-
-        $shellCommand = "docker tag $ImageName ${ImageName}:$tag"
-        Write-Verbose "Executing: $shellCommand"
-        Invoke-Expression "cmd /c $shellCommand `"2>&1`""
-        if ($LastExitCode -ne 0) {
-            Write-Error "Failed to tag the image"
-        }
+    $buildArgs = ""
+    if ($NoCache)
+    {
+        $buildArgs = "--no-cache"
     }
-    else {
-        Write-Error -Message "$Environment is not a valid parameter. File '$composeFileName' does not exist." -Category InvalidArgument
+
+    # Call docker-compose on the published project to build the images
+    $shellCommand = "docker-compose -f '$composeFilePath' -p $ProjectName build $buildArgs"
+    Write-Verbose "Executing: $shellCommand"
+    Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($LastExitCode -ne 0) {
+        Write-Error "Failed to build the image"
+    }
+
+    $tag = [System.DateTime]::Now.ToString("yyyy-MM-dd_HH-mm-ss")
+
+    $shellCommand = "docker tag $ImageName ${ImageName}:$tag"
+    Write-Verbose "Executing: $shellCommand"
+    Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($LastExitCode -ne 0) {
+        Write-Error "Failed to tag the image"
     }
 }
 
@@ -249,9 +242,10 @@ function GetContainerId () {
     $containerId
 }
 
-# Valdiates volume mapping
+# Validates volume mapping
 function ValidateVolumeMapping () {
-    # Checks if the working directory has 
+    # Volume mapping enables shared folder mounting between host and docker container
+    # If there are no files in the working directory, most likely volume mapping is misconfigured.
     $containerId = GetContainerId
     Write-Host "Validating volume mapping in the container $containerId"
     $shellCommand = "docker exec -i $containerId /bin/bash -c 'ls $DockerWorkingDirectory'"
@@ -262,34 +256,26 @@ function ValidateVolumeMapping () {
 
 # Runs docker run
 function Run () {
-    $composeFileName = Join-Path $pubPath (Join-Path Docker "docker-compose.$Environment.yml")
+    $composeFilePath = GetComposeFilePath($pubPath)
 
-    if (Test-Path $composeFileName) {
-        $conflictingContainerIds = $(docker ps -a | select-string -pattern ":80->" | foreach { Write-Output $_.Line.split()[0] })
+    $conflictingContainerIds = $(docker ps -a | select-string -pattern ":80->" | foreach { Write-Output $_.Line.split()[0] })
 
-        if ($conflictingContainerIds) {
-            $conflictingContainerIds = $conflictingContainerIds -Join ' '
-            Write-Host "Stopping conflicting containers using port 80"
-            $stopCommand = "docker stop $conflictingContainerIds"
-            Write-Verbose "Executing: $stopCommand"
-            Invoke-Expression "cmd /c $stopCommand `"2>&1`""
-            if ($LastExitCode -ne 0) {
-                Write-Error "Failed to stop the container(s)"
-            }
-        }
-
-        $shellCommand = "docker-compose -f '$composeFileName' -p $ProjectName up -d"
-        Write-Verbose "Executing: $shellCommand"
-        Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($conflictingContainerIds) {
+        $conflictingContainerIds = $conflictingContainerIds -Join ' '
+        Write-Host "Stopping conflicting containers using port 80"
+        $stopCommand = "docker stop $conflictingContainerIds"
+        Write-Verbose "Executing: $stopCommand"
+        Invoke-Expression "cmd /c $stopCommand `"2>&1`""
         if ($LastExitCode -ne 0) {
-            Write-Error "Failed to start the container(s)"
-        }
-        if ($Environment -eq "debug"){
-          ValidateVolumeMapping
+            Write-Error "Failed to stop the container(s)"
         }
     }
-    else {
-        Write-Error -Message "$Environment is not a valid parameter. File '$composeFileName' does not exist." -Category InvalidArgument
+
+    $shellCommand = "docker-compose -f '$composeFilePath' -p $ProjectName up -d"
+    Write-Verbose "Executing: $shellCommand"
+    Invoke-Expression "cmd /c $shellCommand `"2>&1`""
+    if ($LastExitCode -ne 0) {
+        Write-Error "Failed to start the container(s)"
     }
 
     OpenSite
@@ -354,6 +340,10 @@ function WaitForUrl ([string]$uri) {
         }
     }
     Write-Host
+    if($status -ne 200) {
+        # Check if bad volume mapping is the reason why we were not able to connect
+        ValidateVolumeMapping
+    }
 }
 
 function Refresh () {
@@ -418,6 +408,22 @@ function PublishProject () {
     finally {
         # Restore path to its old value
         $Env:Path = $oldPath
+    }
+}
+
+function GetComposeFilePath([string]$folder) {
+    $composeFileName = $Null
+    if ($Environment -eq "Release") {
+        $composeFileName = "docker-compose.yml"
+    } else {
+        $composeFileName = "docker-compose.yml.$Environment"
+    }
+    $composeFilePath = Join-Path $folder $composeFileName
+
+    if (Test-Path $composeFilePath) {
+        return $composeFilePath
+    } else {
+        Write-Error -Message "$Environment is not a valid parameter. File '$composeFilePath' does not exist." -Category InvalidArgument
     }
 }
 
@@ -492,4 +498,7 @@ if ($WaitForUrl) {
 }
 if ($Refresh) {
     Refresh
+}
+if ($ValidateVolumeMapping) {
+    ValidateVolumeMapping
 }

@@ -54,7 +54,11 @@
       "appsettings.json",
       "web.config",
       "Docker",
-      ".dockerignore"
+      ".dockerignore",
+      "docker-compose.yml",
+      "docker-compose.yml.debug",
+      "dockerfile.debug",
+      "dockerfile"
     ]
   },
   "scripts": {
