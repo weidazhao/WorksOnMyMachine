@@ -14,7 +14,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <DockerToolsMinVersion>0.20</DockerToolsMinVersion>
+    <DockerToolsMinVersion>0.21</DockerToolsMinVersion>
   </PropertyGroup>
   <ItemGroup>
     <DnxInvisibleContent Include="bower.json" />

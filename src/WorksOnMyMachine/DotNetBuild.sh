@@ -1,3 +1,4 @@
 ﻿
 dotnet restore
-dotnet publish -c Release -o ./app/
+dotnet build
+dotnet publish -c Release -o ./app/ WorksOnMyMachine
