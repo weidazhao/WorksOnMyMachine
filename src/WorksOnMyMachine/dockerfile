@@ -1,8 +1,9 @@
 FROM microsoft/dotnet:1.0.0-rc2-core
 
-# Copy the app
-COPY /app /app
 WORKDIR /app
+
+# Copy the app
+COPY ./bin/Release/netcoreapp1.0/publish/ .
 
 # Configure the listening port to 80
 ENV ASPNETCORE_URLS http://*:80
