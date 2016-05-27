@@ -2,8 +2,7 @@ version: '2'
 
 services:
   worksonmymachine:
-    build:
-      context: ..
-      dockerfile: app/dockerfile
+    image:
+      weidazhao/worksonmymachine
     ports:
       - "80:80"
