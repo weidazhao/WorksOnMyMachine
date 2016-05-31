@@ -1,4 +1,4 @@
 #!/bin/bash
 
 dotnet restore
-dotnet publish -c Release
+dotnet publish -c $BUILD_CONFIGURATION
