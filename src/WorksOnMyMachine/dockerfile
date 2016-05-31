@@ -10,4 +10,4 @@ ENV ASPNETCORE_URLS http://*:80
 EXPOSE 80
 
 # Start the app
-ENTRYPOINT dotnet WorksOnMyMachine.dll
+#ENTRYPOINT dotnet WorksOnMyMachine.dll
