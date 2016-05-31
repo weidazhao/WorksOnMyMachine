@@ -12,7 +12,7 @@ namespace WorksOnMyMachine
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseUrls(Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://*:80")
+                .UseUrls(Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? string.Empty)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
