@@ -7,7 +7,7 @@
 
     <!-- Use this property to change the docker host that is used by this project. Delete default, leaving the value blank for the Docker for Windows beta
         (Note: you need to restart VS after changing this property) -->
-    <DockerMachineName Condition=" '$(DockerMachineName)'=='' ">default</DockerMachineName>
+    <DockerMachineName Condition=" '$(DockerMachineName)'=='' "></DockerMachineName>
 
     <!-- Use these properties to configure the process that will be started by the debugger in the container -->
     <DockerDebugStartProcess>dotnet</DockerDebugStartProcess>
