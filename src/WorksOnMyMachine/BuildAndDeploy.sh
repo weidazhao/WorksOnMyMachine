@@ -1,9 +1,9 @@
 #!/bin/bash
 
 dotnet restore
-dotnet publish -c $BUILD_CONFIGURATION
+dotnet publish -c $BUILD_CONFIGURATION -o $BUILD_STAGINGDIRECTORY/app/
 
-pushd bin/$BUILD_CONFIGURATION/netcoreapp1.0/publish/
+pushd $BUILD_STAGINGDIRECTORY/app/
 
 docker -H=$DOCKER_HOST_LOCAL build -t weidazhao/worksonmymachine:latest .
 docker -H=$DOCKER_HOST_LOCAL push weidazhao/worksonmymachine:latest
