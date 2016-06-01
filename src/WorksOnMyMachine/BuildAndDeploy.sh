@@ -10,5 +10,5 @@ docker -H=$DOCKER_HOST_LOCAL push weidazhao/worksonmymachine:latest
 
 popd
 
-docker-compose -H=$DOCKER_HOST_AGENT0 -f $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml down --rmi all
+docker-compose -H=$DOCKER_HOST_AGENT0 -f $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml down --rmi all --remove-orphans
 docker-compose -H=$DOCKER_HOST_AGENT0 -f $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml up -d
