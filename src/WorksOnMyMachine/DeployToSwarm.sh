@@ -8,6 +8,6 @@ pushd bin/$BUILD_CONFIGURATION/netcoreapp1.0/publish/
 docker build -t weidazhao/worksonmymachine:latest .
 docker push weidazhao/worksonmymachine:latest
 
-scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml $ACS_AGENT0:~/docker-compose.yml
-scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/RunOnSwarm.sh $ACS_AGENT0:~/RunOnSwarm.sh
-ssh $ACS_AGENT0 -A -p 2200 'chmod +x ~/RunOnSwarm.sh && ~/RunOnSwarm.sh'
+scp $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml $ACS_AGENT0:~/docker-compose.yml
+scp $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/RunOnSwarm.sh $ACS_AGENT0:~/RunOnSwarm.sh
+ssh $ACS_AGENT0 'chmod +x ~/RunOnSwarm.sh && ~/RunOnSwarm.sh'
