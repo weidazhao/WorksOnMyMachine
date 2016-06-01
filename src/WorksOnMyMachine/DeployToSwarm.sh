@@ -1,9 +1,13 @@
 #!/bin/bash
 
-# The authentication part is just a PoC.
-eval `ssh-agent`
-ssh-add $ACS_SSHKEY
+dotnet restore
+dotnet publish -c $BUILD_CONFIGURATION
 
-scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml $ACS_MASTER0:~/docker-compose.yml
-scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/RunOnSwarm.sh $ACS_MASTER0:~/RunOnSwarm.sh
-ssh $ACS_MASTER0 -A -p 2200 'chmod +x ~/RunOnSwarm.sh && ~/RunOnSwarm.sh'
+pushd bin/$BUILD_CONFIGURATION/netcoreapp1.0/publish/
+
+docker build -t weidazhao/worksonmymachine:latest .
+docker push weidazhao/worksonmymachine:latest
+
+scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/docker-compose.yml $ACS_AGENT0:~/docker-compose.yml
+scp -P 2200 $BUILD_SOURCESDIRECTORY/src/WorksOnMyMachine/RunOnSwarm.sh $ACS_AGENT0:~/RunOnSwarm.sh
+ssh $ACS_AGENT0 -A -p 2200 'chmod +x ~/RunOnSwarm.sh && ~/RunOnSwarm.sh'
