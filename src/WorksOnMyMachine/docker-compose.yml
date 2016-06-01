@@ -3,6 +3,6 @@ version: '2'
 services:
   worksonmymachine:
     image:
-      stevelasker/worksonmymachine:latest
+      weidazhao/worksonmymachine:latest
     ports:
       - "80:80"
