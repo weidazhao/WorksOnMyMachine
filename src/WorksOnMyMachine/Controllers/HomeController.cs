@@ -17,7 +17,7 @@ namespace WorksOnMyMachine.Controllers
         }
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page. Test";
+            ViewData["Message"] = "Your contact page. Build Agent inside ACS";
 
             return View();
         }
