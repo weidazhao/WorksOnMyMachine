@@ -1,2 +1,2 @@
 .dockerignore
-dockerfile
+build-deploy.sh
