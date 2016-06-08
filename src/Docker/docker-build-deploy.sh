@@ -4,7 +4,6 @@ DOCKER_IMAGE_REPOSITORY=weidazhao/worksonmymachine
 DOCKER_IMAGE_TAG=latest
 DOCKERFILE_PATH=Docker/Dockerfile
 PROJECT_NAME=WorksOnMyMachine
-BUILD_CONFIGURATION=Release
 
 docker build -t $DOCKER_IMAGE_REPOSITORY:build \
              -f Dockerfile.build \
@@ -19,5 +18,5 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock $DOCKER_IMAGE_REPOSITORY
 
 docker push $DOCKER_IMAGE_REPOSITORY:$DOCKER_IMAGE_TAG
 
-docker-compose -H=10.0.0.5:2375 -f docker-compose.yml down --rmi all --remove-orphans
-docker-compose -H=10.0.0.5:2375 -f docker-compose.yml up -d
+docker-compose -H=$DOCKER_HOST_AGENT0 -f docker-compose.yml down --rmi all --remove-orphans
+docker-compose -H=$DOCKER_HOST_AGENT0 -f docker-compose.yml up -d
