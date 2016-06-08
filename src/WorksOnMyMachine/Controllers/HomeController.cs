@@ -17,7 +17,7 @@ namespace WorksOnMyMachine.Controllers
         }
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page. VSTS hooked up.";
+            ViewData["Message"] = "Your contact page. Hello Kitty";
 
             return View();
         }
