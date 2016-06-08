@@ -9,3 +9,6 @@ docker build -t $IMAGE_NAME:build -f Dockerfile.build --build-arg IMAGE_NAME=$IM
 docker run -v /var/run/docker.sock:/var/run/docker.sock $IMAGE_NAME:build
 
 docker push $IMAGE_NAME:latest
+
+docker-compose -H=10.0.0.5:2375 -f src/WorksOnMyMachine/docker-compose.yml down --rmi all --remove-orphans
+docker-compose -H=10.0.0.5:2375 -f src/WorksOnMyMachine/docker-compose.yml up -d
