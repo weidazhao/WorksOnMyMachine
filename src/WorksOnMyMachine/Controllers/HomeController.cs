@@ -17,7 +17,7 @@ namespace WorksOnMyMachine.Controllers
         }
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page. Docker in Docker";
+            ViewData["Message"] = "Your contact page.";
 
             return View();
         }
